@@ -1,0 +1,20 @@
+@charset "utf-8";
+/*初始化样式 */
+body,div,p,h1,h2,h3,h4,h5,form,table,dl,dt,dd,ul,li,a,img,span,em,i,strong,b,input,textarea,select,label{ margin:0px; padding:0px;}
+li{ list-style:none;}
+img{ border:0 none;}
+em,i{ font-style:normal;}
+a{ color: #5B5B5B; text-decoration:none;}
+a:hover{ color: #1890FF;}
+.layout{ width: 1200px; margin: 0 auto;}
+.clearfix {
+    &:before,
+    &:after {
+        content: ' ';
+        display: table;
+    }
+    &:after {
+        clear: both;
+    }
+}
+body{ font-size: 14px; font-family:'ArialMT'; color:#5B5B5B;}

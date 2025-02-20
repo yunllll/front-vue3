@@ -1,0 +1,115 @@
+.main-list{
+    box-sizing: border-box; // 怪异盒子
+    background: #FFFFFF;
+    border: 1px solid rgba(0,0,0,0.15);
+    margin-top: 16px;
+    padding: 14px 15px 22px;
+}
+.main-filter{
+    display: flex;
+    align-items: center;
+    .radio{
+        display: flex;
+        margin-left: 31px;
+        align-items: center;
+        & > span{
+            margin-right: 19px;
+        }
+    }
+    .search{
+        display: flex;
+        margin-left: auto;
+    }
+}
+.main-table{
+    margin-top: 15px;
+}
+.main-page{
+    margin-top: 21px;
+    display: flex;
+    align-items: center;
+    .records{
+        font-family: ArialMT;
+        font-size: 12px;
+        color: rgba(0,0,0,0.46);
+        margin-right: auto;
+    }
+}
+
+
+
+.w-160{
+    width: 160px;
+}
+
+.ml-18{
+    margin-left: 18px;
+}
+
+.mr-4{
+    margin-right: 4px;
+}
+
+// 修改.el-button
+.el-button,.el-input__wrapper{
+    border-radius: 2px;
+}
+.el-pagination button.is-disabled, .el-pagination button:disabled{
+    color: rgba(0,0,0,0.25);
+}
+.el-pagination{
+    .btn-prev,.btn-next{
+        .el-icon{
+            font-size: 16px;
+        }
+    }
+}
+.el-pagination--small .el-pager li{
+    min-width: 22px;
+    font-size: 14px;
+    margin-left: 4px;
+    color: rgba(0,0,0,0.65);
+}
+.el-pager li.is-active{
+    background: #1890FF;
+    color: #fff;
+    border-radius: 2px;
+    border-radius: 2px;
+    width: 22px;
+    height: 22px;
+    box-sizing: border-box;
+    font-weight: normal;
+}
+
+// 修改公共的el-radio样式
+.el-radio{
+    margin-right: 15px;
+}
+.el-radio__input.is-checked .el-radio__inner{
+    background-color: #fff;
+}
+.el-radio__inner{
+    width: 16px;
+    height: 16px;
+    &:after{
+        background-color: var(--el-color-primary);
+        width: 8px;
+        height: 8px;
+    }
+}
+
+// 修改el-table
+.el-table{
+    color: #5A5A5A;
+}
+.el-table .el-table__cell{
+    padding: 12px 0;
+}
+.el-table th.el-table__cell{
+    background: rgba(24,144,255,0.14);
+}
+.el-table thead{
+    color: #5A5A5A;
+}
+
+// 修改el-pagination
