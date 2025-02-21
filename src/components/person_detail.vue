@@ -1,5 +1,5 @@
 <template>
-    <el-upload class="avatar-uploader" action="http://localhost:7980/api/upload-avatar" :show-file-list="false"
+    <el-upload class="avatar-uploader" action="http://175.178.59.198:7980/api/upload-avatar" :show-file-list="false"
         :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
         <img v-if="imageUrl" :src="imageUrl" class="avatar" />
         <el-icon v-else class="avatar-uploader-icon">
@@ -58,7 +58,7 @@ const imageUrl = ref('');
 const handleAvatarSuccess = async (response, uploadFile) => {
     const userId = store.state.user.id; // 获取当前用户的 ID
     const relativePath = response.filePath.replace(/\\/g, '/'); // 替换反斜杠为正斜杠
-    const newIconUrl = `http://localhost:7980/${relativePath}`; // 构建新的头像 URL
+    const newIconUrl = `http://175.178.59.198:7980/${relativePath}`; // 构建新的头像 URL
 
     try {
         // 调用更新用户头像的 API

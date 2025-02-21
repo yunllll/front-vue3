@@ -2,7 +2,7 @@
     <div>
         <h2 style="text-align: center;">2025现金明细</h2>
         <div style="margin: 20px;">
-            <input type="file" @change="handleFileUpload" accept=".xlsx, .xls"
+            <input type="file" @change="handleFileChange" accept=".xlsx, .xls"
                 style="display: block; margin: 10px 0;" />
             <el-button @click="importExcel" type="primary">一键导入Excel</el-button>
         </div>
@@ -190,73 +190,97 @@ import { RequestSearchEntries } from '../network_api/PageRequest'; // 导入搜�
 import { logChange } from '../network_api/PageRequest'; // 导入日志服务
 import { sendMessage, fetchUserIdByName } from '../network_api/PageRequest';
 import { useStore } from 'vuex';
-import { readSheetNames } from 'read-excel-file';
-// 处理文件上传
-const handleFileUpload = async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+import XLSX from 'xlsx'
 
-  // 解析Excel文件
-  const rows = await readSheetNames(file);
-  
-  // 数据映射（假设Excel结构如下）
-  // 序号 | 日期 | 摘要 | 收入金额 | 业务费 | 汽油费 | 烟酒 | 材料费 | 人工 | 税费 | 借支 | 其他费 | 小计 | 现金余额 | 确认签名
-  for (const row of rows.slice(2)) { // 跳过表头和空行
-    if (!row[0]) continue; // 跳过空行
+const selectedFile = ref(null); // 用于存储选择的文件
 
-    const entry = {
-      id: row[0], // A列：序号
-      entry_date: formatExcelDate(row[1]), // B列：日期
-      description: row[2], // C列：摘要
-      income_amount: Number(row[3]) || 0, // D列：收入金额
-      business_expense: Number(row[4]) || 0, // E列：业务费
-      gasoline_expense: Number(row[5]) || 0, // F列：汽油费
-      alcohol_tobacco: Number(row[6]) || 0, // G列：烟酒
-      material_expense: Number(row[7]) || 0, // H列：材料费
-      labor_expense: Number(row[8]) || 0, // I列：人工
-      tax_expense: Number(row[9]) || 0, // J列：税费
-      advance_expense: Number(row[10]) || 0, // K列：借支
-      other_expense: Number(row[11]) || 0, // L列：其他费
-      subtotal: 0, // M列：小计（自动计算）
-      cash_balance: 0, // N列：现金余额（自动计算）
-      confirm_signature: row[14] || '', // O列：确认签名
-    };
-
-    // 计算小计和现金余额
-    entry.subtotal = calculateSubtotal(entry);
-    entry.cash_balance = entry.income_amount - entry.subtotal;
-
-    // 调用API添加条目
-    try {
-      await RequestAddEntry(entry);
-      ElMessage.success(`成功导入条目 ${entry.id}`);
-    } catch (error) {
-      ElMessage.error(`导入条目 ${entry.id} 失败: ${error.message}`);
+// 处理文件选择
+const handleFileChange = (event) => {
+    selectedFile.value = event.target.files[0]; // 获取选择的文件
+    if (!selectedFile.value) {
+        ElMessage.warning('请上传一个文件');
     }
-  }
-
-  fetchEntries(); // 刷新表格数据
 };
 
-// Excel日期转换（将Excel序列号转为YYYY-MM-DD）
-const formatExcelDate = (excelDate) => {
-  if (!excelDate) return '';
-  const date = new Date((excelDate - 25569) * 86400 * 1000);
-  return date.toISOString().split('T')[0];
+// 导入 Excel 文件
+const importExcel = async () => {
+    if (!selectedFile.value) {
+        ElMessage.warning('请先选择一个文件');
+        return;
+    }
+    console.log('Selected file:', selectedFile.value); // 调试信息
+
+    const fileReader = new FileReader();
+    fileReader.onload = async (e) => {
+        console.log('File loaded:', e.target.result); // 调试信息
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const wsname = workbook.SheetNames[0]; // 取第一张表
+            const ws = XLSX.utils.sheet_to_json(workbook.Sheets[wsname]); // 生成 JSON 表格内容
+
+            // 处理数据
+            await processExcelData(ws);
+        } catch (err) {
+            console.error('读取文件失败:', err);
+            ElMessage.error('文件处理失败，请重试');
+        }
+    };
+
+    fileReader.readAsArrayBuffer(selectedFile.value); // 使用 readAsArrayBuffer 读取文件
+};
+
+const processExcelData = async (data) => {
+    console.log('Processing data:', data); // 调试信息
+    for (const row of data) { // 不再跳过前两行，因为数据已经是处理过的
+        if (!row['序号']) continue; // 跳过空行
+
+        const entry = {
+            id: row['序号'], // A列：序号
+            entry_date: row['日期'], // B列：日期
+            description: row['摘要'], // C列：摘要
+            income_amount: Number(row['收入金额']) || 0, // D列：收入金额
+            business_expense: Number(row['业务费']) || 0, // E列：业务费
+            gasoline_expense: Number(row['汽油费']) || 0, // F列：汽油费
+            alcohol_tobacco: Number(row['烟酒']) || 0, // G列：烟酒
+            material_expense: Number(row['材料费']) || 0, // H列：材料费
+            labor_expense: Number(row['人工']) || 0, // I列：人工
+            tax_expense: Number(row['税费']) || 0, // J列：税费
+            advance_expense: Number(row['借支']) || 0, // K列：借支
+            other_expense: Number(row['其他费']) || 0, // L列：其他费
+            subtotal: 0, // M列：小计（自动计算）
+            cash_balance: 0, // N列：现金余额（自动计算）
+            confirm_signature: row['确认签名'] || '', // O列：确认签名
+        };
+
+        // 计算小计和现金余额
+        entry.subtotal = calculateSubtotal(entry);
+        entry.cash_balance = entry.income_amount - entry.subtotal;
+
+        // 调用API添加条目
+        try {
+            await RequestAddEntry(entry);
+            ElMessage.success(`成功导入条目 ${entry.id}`);
+        } catch (error) {
+            ElMessage.error(`导入条目 ${entry.id} 失败: ${error.message}`);
+        }
+    }
+
+    fetchEntries(); // 刷新表格数据
 };
 
 // 计算支出小计
 const calculateSubtotal = (entry) => {
-  return [
-    entry.business_expense,
-    entry.gasoline_expense,
-    entry.alcohol_tobacco,
-    entry.material_expense,
-    entry.labor_expense,
-    entry.tax_expense,
-    entry.advance_expense,
-    entry.other_expense
-  ].reduce((sum, val) => sum + val, 0);
+    return [
+        entry.business_expense,
+        entry.gasoline_expense,
+        entry.alcohol_tobacco,
+        entry.material_expense,
+        entry.labor_expense,
+        entry.tax_expense,
+        entry.advance_expense,
+        entry.other_expense
+    ].reduce((sum, val) => sum + val, 0);
 };
 
 const store = useStore();
@@ -428,16 +452,40 @@ const handleDelete = async (row) => {
     }
 };
 
+const handleAdd = () => {
+    // 获取当前日期并格式化为 YYYY-MM-DD
+    const currentDate = new Date().toISOString().split('T')[0];
+
+    // 清空表单数据并设置默认值
+    form.value = {
+        entry_date: currentDate, // 默认为当前日期
+        description: '', // 默认为空
+        income_amount: 0, // 默认收入金额为 0
+        business_expense: 0, // 默认业务费为 0
+        gasoline_expense: 0, // 默认汽油费为 0
+        alcohol_tobacco: 0, // 默认烟酒为 0
+        material_expense: 0, // 默认材料费为 0
+        labor_expense: 0, // 默认人工为 0
+        tax_expense: 0, // 默认税费为 0
+        advance_expense: 0, // 默认借支为 0
+        other_expense: 0, // 默认其他费为 0
+        confirm_signature: '' // 默认确认签名为空
+    };
+    dialogFormVisibleAdd.value = true; // 显示添加条目的对话框
+};
+
 const addEntry = async () => {
     try {
         await RequestAddEntry(form.value); // 调用新增条目的 API
+        console.log(user.value.id)
+        ElMessage.success("插入成功!");
         const logData = {
             avatar: user.value.icon, // 假设用户信息中有 avatar 字段
             name: `${user.value.username}(已新增条目)`,
             oldValue: '', // 旧值为当前行数据
             newValue: '', // 新值为更新后的数据
             modifiedAt: formatDate(new Date().toISOString()),
-            userId: user.value.id // 假设用户信息中有 id 字段
+            userId: user.value.id
         };
         await logChange(logData); // 记录日志
         dialogFormVisibleAdd.value = false; // 关闭对话框

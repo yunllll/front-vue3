@@ -47,7 +47,6 @@
                     </el-form-item>
                     <el-form-item label="角色">
                         <el-radio-group v-model="user.role">
-                            <el-radio label="管理员" value="admin" />
                             <el-radio label="会计" value="accountant" />
                             <el-radio label="普通用户" value="normal" />
                         </el-radio-group>

@@ -5,11 +5,10 @@ import nprogress from "nprogress";
 //start:进度条开始 done：进度条结束
 //引入进度条的样式
 import "nprogress/nprogress.css";
-const base = require('@/network_api/config');
 const requests = axios.create({
   // 配置对象
   //基础路径，发送请求的时候，路径当中会出现api
-  baseURL: `${base}/api`,
+  baseURL: `/api`,
   // baseURL: base,
   //代表请求超时的时间3秒
   timeout: 3000,

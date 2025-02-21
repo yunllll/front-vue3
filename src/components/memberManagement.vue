@@ -39,7 +39,7 @@
     </div>
     <div>
         <h1 style="margin-bottom: 10px;margin-top: 10px;">邀请码管理</h1>
-        <el-button type="primary" @click="handleAddInviteCode" style="margin-bottom: 10px;">生成邀请码</el-button>
+        <el-button type="primary" @click="handleAddInviteCode" style="margin-bottom: 10px;">生成邀请码,1为已经使用。</el-button>
         <el-table :data="inviteCodes" style="width: 100%" center>
             <el-table-column label="邀请码" prop="code" />
             <el-table-column label="状态" prop="is_used" />
